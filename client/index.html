@@ -191,7 +191,7 @@
                         const nameMatch = !this.nameFilter || 
                             emp.highlightedName?.toLowerCase().includes(this.nameFilter.toLowerCase());
                         const distIdMatch = !this.distIdFilter || 
-                            emp.dist_id?.toString().includes(this.distIdFilter);
+                            emp.dist_id?.toString() === this.distIdFilter;
                         const hinduMatch = this.hinduFilter === null || 
                             (this.hinduFilter ? emp.isHindu === 'Yes' : emp.isHindu === 'No');
                         const gujaratiMatch = this.gujaratiFilter === null || 
