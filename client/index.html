@@ -27,12 +27,15 @@
                     <v-text-field v-model="nameFilter" label="Filter by Name" clearable></v-text-field>
                 </v-col>
                 <v-col cols="1">
+                    <v-text-field v-model="distIdFilter" label="Dist ID" clearable></v-text-field>
+                </v-col>
+                <v-col cols="1">
                     <v-select v-model="hinduFilter" :items="boolOptions" label="Hindu" clearable></v-select>
                 </v-col>
                 <v-col cols="1">
                     <v-select v-model="gujaratiFilter" :items="boolOptions" label="Gujarati" clearable></v-select>
                 </v-col>
-                <v-col cols="2">
+                <v-col cols="1">
                     <v-select v-model="emailSentFilter" :items="boolOptions" label="Email Sent" clearable></v-select>
                 </v-col>
                 <v-col cols="2">
@@ -158,6 +161,7 @@
                     emailData: { subject: '', message: '' },
                     sortBy: [],
                     nameFilter: '',
+                    distIdFilter: '',
                     hinduFilter: null,
                     gujaratiFilter: null,
                     emailSentFilter: null,
@@ -186,6 +190,8 @@
                     return this.employees.filter(emp => {
                         const nameMatch = !this.nameFilter || 
                             emp.highlightedName?.toLowerCase().includes(this.nameFilter.toLowerCase());
+                        const distIdMatch = !this.distIdFilter || 
+                            emp.dist_id?.toString().includes(this.distIdFilter);
                         const hinduMatch = this.hinduFilter === null || 
                             (this.hinduFilter ? emp.isHindu === 'Yes' : emp.isHindu === 'No');
                         const gujaratiMatch = this.gujaratiFilter === null || 
@@ -195,7 +201,7 @@
                         const participateMatch = this.participateFilter === null || 
                             emp.wants_to_participate === this.participateFilter;
                         
-                        return nameMatch && hinduMatch && gujaratiMatch && emailMatch && participateMatch;
+                        return nameMatch && distIdMatch && hinduMatch && gujaratiMatch && emailMatch && participateMatch;
                     });
                 }
             },
@@ -252,6 +258,7 @@
                 clearFilters() {
                     console.log('Clearing filters');
                     this.nameFilter = '';
+                    this.distIdFilter = '';
                     this.hinduFilter = null;
                     this.gujaratiFilter = null;
                     this.emailSentFilter = null;
