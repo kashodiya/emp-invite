@@ -28,7 +28,7 @@ class EmployeeUpdate(BaseModel):
 class BulkEmailRequest(BaseModel):
     employee_ids: List[int]
     subject: str
-    message: str
+    message: str 
 
 @app.get("/")
 async def read_root():
@@ -39,7 +39,7 @@ async def read_root():
 async def get_employees():
     print("Fetching all employees")
     async with aiosqlite.connect("employee_database.db") as db:
-        cursor = await db.execute("SELECT rowid, * FROM employees")
+        cursor = await db.execute("SELECT rowid, * FROM employees WHERE isHindu = 'Yes'")
         rows = await cursor.fetchall()
         columns = [description[0] for description in cursor.description]
         employees = [dict(zip(columns, row)) for row in rows]
