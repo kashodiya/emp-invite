@@ -46,8 +46,9 @@
             <v-data-table
                 :headers="headers"
                 :items="filteredEmployees"
-                :items-per-page="100"
                 class="elevation-1"
+                :items-per-page="-1"
+                disable-pagination
                 v-model="selectedRows"
                 item-value="rowid"
                 show-select
@@ -70,6 +71,7 @@
                 <template v-slot:item.actions="{ item }">
                     <v-btn size="small" @click="selectEmployee(null, { item })" color="primary">Edit</v-btn>
                 </template>
+                <template v-slot:bottom></template>
             </v-data-table>
 
             <v-dialog v-model="dialog" max-width="600px">
