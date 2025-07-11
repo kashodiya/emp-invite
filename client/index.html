@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Management</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.4.0/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+<body>
+    <div id="app"></div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@3.4.0/dist/vuetify.min.js"></script>
+    <script src="https://unpkg.com/vue-router@4"></script>
+
+    <script type="text/x-template" id="employee-list">
+        <v-container fluid>
+            <v-row>
+                <v-col cols="12">
+                    <h1>Employee Management</h1>
+                </v-col>
+            </v-row>
+            
+            <v-row>
+                <v-col cols="3">
+                    <v-text-field v-model="nameFilter" label="Filter by Name" clearable></v-text-field>
+                </v-col>
+                <v-col cols="2">
+                    <v-select v-model="hinduFilter" :items="boolOptions" label="Hindu" clearable></v-select>
+                </v-col>
+                <v-col cols="2">
+                    <v-select v-model="emailSentFilter" :items="boolOptions" label="Email Sent" clearable></v-select>
+                </v-col>
+                <v-col cols="2">
+                    <v-select v-model="participateFilter" :items="boolOptions" label="Wants to Participate" clearable></v-select>
+                </v-col>
+                <v-col cols="1">
+                    <v-btn @click="clearFilters" color="secondary">Clear</v-btn>
+                </v-col>
+                <v-col cols="2">
+                    <v-btn @click="openEmailDialog" color="primary" :disabled="selectedRows.length === 0">Send Email ({{selectedRows.length}})</v-btn>
+                </v-col>
+            </v-row>
+
+            <v-data-table
+                :headers="headers"
+                :items="filteredEmployees"
+                :items-per-page="100"
+                class="elevation-1"
+                v-model="selectedRows"
+                item-value="rowid"
+                show-select
+            >
+                <template v-slot:item.email_invite_sent="{ item }">
+                    <v-chip :color="item.email_invite_sent ? 'green' : 'red'" small>
+                        {{ item.email_invite_sent ? 'Yes' : 'No' }}
+                    </v-chip>
+                </template>
+                <template v-slot:item.reply_received="{ item }">
+                    <v-chip :color="item.reply_received ? 'green' : 'red'" small>
+                        {{ item.reply_received ? 'Yes' : 'No' }}
+                    </v-chip>
+                </template>
+                <template v-slot:item.wants_to_participate="{ item }">
+                    <v-chip :color="item.wants_to_participate ? 'green' : 'red'" small>
+                        {{ item.wants_to_participate ? 'Yes' : 'No' }}
+                    </v-chip>
+                </template>
+                <template v-slot:item.actions="{ item }">
+                    <v-btn size="small" @click="selectEmployee(null, { item })" color="primary">Edit</v-btn>
+                </template>
+            </v-data-table>
+
+            <v-dialog v-model="dialog" max-width="600px">
+                <v-card v-if="selectedEmployee">
+                    <v-card-title>{{ selectedEmployee.firstName }} {{ selectedEmployee.lastName }}</v-card-title>
+                    <v-card-text>
+                        <v-container>
+                            <v-row>
+                                <v-col cols="12">
+                                    <p><strong>Email:</strong> {{ selectedEmployee.email }}</p>
+                                    <p><strong>Mobile:</strong> {{ selectedEmployee.mobileNumber }}</p>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="6">
+                                    <v-switch v-model="editData.email_invite_sent" label="Email Sent" color="primary"></v-switch>
+                                </v-col>
+                                <v-col cols="6">
+                                    <v-switch v-model="editData.reply_received" label="Reply Received" color="primary"></v-switch>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="6">
+                                    <v-switch v-model="editData.wants_to_participate" label="Wants to Participate" color="primary"></v-switch>
+                                </v-col>
+                                <v-col cols="6">
+                                    <v-text-field v-model="editData.phone_number" label="Phone Number"></v-text-field>
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="12">
+                                    <v-textarea v-model="editData.comments" label="Comments" rows="3"></v-textarea>
+                                </v-col>
+                            </v-row>
+                        </v-container>
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="dialog = false">Cancel</v-btn>
+                        <v-btn color="blue darken-1" text @click="updateEmployee">Save</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
+
+            <v-dialog v-model="emailDialog" max-width="600px">
+                <v-card>
+                    <v-card-title>Send Email to {{ selectedRows.length }} Employee(s)</v-card-title>
+                    <v-card-text>
+                        <v-text-field v-model="emailData.subject" label="Subject" required></v-text-field>
+                        <v-textarea v-model="emailData.message" label="Message" rows="5" required></v-textarea>
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn @click="emailDialog = false">Cancel</v-btn>
+                        <v-btn color="primary" @click="sendEmails">Send Emails</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
+        </v-container>
+    </script>
+
+    <script>
+        const { createApp } = Vue;
+        const { createVuetify } = Vuetify;
+        const { createRouter, createWebHashHistory } = VueRouter;
+
+        console.log('Initializing Vue app...');
+
+        const EmployeeList = {
+            template: '#employee-list',
+            data() {
+                return {
+                    employees: [],
+                    selectedEmployee: null,
+                    selectedRows: [],
+                    dialog: false,
+                    emailDialog: false,
+                    editData: {},
+                    emailData: { subject: '', message: '' },
+                    nameFilter: '',
+                    hinduFilter: null,
+                    emailSentFilter: null,
+                    participateFilter: null,
+                    boolOptions: [
+                        { title: 'Yes', value: true },
+                        { title: 'No', value: false }
+                    ],
+                    headers: [
+                        { title: 'Name', value: 'highlightedName' },
+                        { title: 'Email', value: 'email' },
+                        { title: 'Hindu', value: 'isHindu' },
+                        { title: 'Email Sent', value: 'email_invite_sent' },
+                        { title: 'Reply Received', value: 'reply_received' },
+                        { title: 'Wants to Participate', value: 'wants_to_participate' },
+                        { title: 'Phone', value: 'phone_number' },
+                        { title: 'Actions', value: 'actions', sortable: false }
+                    ]
+                }
+            },
+            computed: {
+                filteredEmployees() {
+                    console.log('Filtering employees...');
+                    return this.employees.filter(emp => {
+                        const nameMatch = !this.nameFilter || 
+                            emp.highlightedName?.toLowerCase().includes(this.nameFilter.toLowerCase());
+                        const hinduMatch = this.hinduFilter === null || 
+                            (this.hinduFilter ? emp.isHindu === 'Yes' : emp.isHindu === 'No');
+                        const emailMatch = this.emailSentFilter === null || 
+                            emp.email_invite_sent === this.emailSentFilter;
+                        const participateMatch = this.participateFilter === null || 
+                            emp.wants_to_participate === this.participateFilter;
+                        
+                        return nameMatch && hinduMatch && emailMatch && participateMatch;
+                    });
+                }
+            },
+            methods: {
+                async fetchEmployees() {
+                    console.log('Fetching employees from API...');
+                    try {
+                        const response = await fetch('/api/employees');
+                        this.employees = await response.json();
+                        console.log('Employees loaded:', this.employees.length);
+                    } catch (error) {
+                        console.error('Error fetching employees:', error);
+                    }
+                },
+                selectEmployee(event, { item }) {
+                    console.log('Selected employee:', item);
+                    console.log('Boolean values:', {
+                        email_invite_sent: item.email_invite_sent,
+                        reply_received: item.reply_received,
+                        wants_to_participate: item.wants_to_participate
+                    });
+                    this.selectedEmployee = item;
+                    this.editData = {
+                        email_invite_sent: item.email_invite_sent === true || item.email_invite_sent === 'true' || item.email_invite_sent === 1,
+                        reply_received: item.reply_received === true || item.reply_received === 'true' || item.reply_received === 1,
+                        wants_to_participate: item.wants_to_participate === true || item.wants_to_participate === 'true' || item.wants_to_participate === 1,
+                        phone_number: item.phone_number || '',
+                        comments: item.comments || ''
+                    };
+                    this.dialog = true;
+                },
+                async updateEmployee() {
+                    const employeeId = this.selectedEmployee.rowid;
+                    console.log('Updating employee:', employeeId, this.editData);
+                    
+                    try {
+                        const response = await fetch(`/api/employees/${employeeId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.editData)
+                        });
+                        
+                        if (response.ok) {
+                            console.log('Employee updated successfully');
+                            await this.fetchEmployees();
+                            this.dialog = false;
+                        } else {
+                            console.error('Failed to update employee');
+                        }
+                    } catch (error) {
+                        console.error('Error updating employee:', error);
+                    }
+                },
+                clearFilters() {
+                    console.log('Clearing filters');
+                    this.nameFilter = '';
+                    this.hinduFilter = null;
+                    this.emailSentFilter = null;
+                    this.participateFilter = null;
+                },
+                openEmailDialog() {
+                    this.emailDialog = true;
+                },
+                async sendEmails() {
+                    const employeeIds = this.selectedRows.map(emp => emp.rowid);
+                    try {
+                        const response = await fetch('/api/send-emails', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                employee_ids: employeeIds,
+                                subject: this.emailData.subject,
+                                message: this.emailData.message
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const result = await response.json();
+                            alert(result.message);
+                            await this.fetchEmployees();
+                            this.emailDialog = false;
+                            this.selectedRows = [];
+                            this.emailData = { subject: '', message: '' };
+                        }
+                    } catch (error) {
+                        console.error('Error sending emails:', error);
+                        alert('Failed to send emails');
+                    }
+                }
+            },
+            mounted() {
+                console.log('EmployeeList component mounted');
+                this.fetchEmployees();
+            }
+        };
+
+        const routes = [
+            { path: '/', component: EmployeeList }
+        ];
+
+        const router = createRouter({
+            history: createWebHashHistory(),
+            routes
+        });
+
+        const vuetify = createVuetify();
+
+        const app = createApp({
+            template: '<router-view></router-view>'
+        });
+
+        app.use(router);
+        app.use(vuetify);
+        
+        console.log('Mounting Vue app...');
+        app.mount('#app');
+    </script>
+</body>
+</html>

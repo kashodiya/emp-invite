@@ -1,2 +1,0 @@
-# emp-invite
-Nothing
