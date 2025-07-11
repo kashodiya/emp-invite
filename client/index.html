@@ -30,6 +30,9 @@
                     <v-select v-model="hinduFilter" :items="boolOptions" label="Hindu" clearable></v-select>
                 </v-col>
                 <v-col cols="2">
+                    <v-select v-model="gujaratiFilter" :items="boolOptions" label="Gujarati" clearable></v-select>
+                </v-col>
+                <v-col cols="2">
                     <v-select v-model="emailSentFilter" :items="boolOptions" label="Email Sent" clearable></v-select>
                 </v-col>
                 <v-col cols="2">
@@ -153,6 +156,7 @@
                     emailData: { subject: '', message: '' },
                     nameFilter: '',
                     hinduFilter: null,
+                    gujaratiFilter: null,
                     emailSentFilter: null,
                     participateFilter: null,
                     boolOptions: [
@@ -163,6 +167,7 @@
                         { title: 'Name', value: 'highlightedName' },
                         { title: 'Email', value: 'email' },
                         { title: 'Hindu', value: 'isHindu' },
+                        { title: 'Gujarati', value: 'isGujarati' },
                         { title: 'Email Sent', value: 'email_invite_sent' },
                         { title: 'Reply Received', value: 'reply_received' },
                         { title: 'Wants to Participate', value: 'wants_to_participate' },
@@ -179,12 +184,14 @@
                             emp.highlightedName?.toLowerCase().includes(this.nameFilter.toLowerCase());
                         const hinduMatch = this.hinduFilter === null || 
                             (this.hinduFilter ? emp.isHindu === 'Yes' : emp.isHindu === 'No');
+                        const gujaratiMatch = this.gujaratiFilter === null || 
+                            (this.gujaratiFilter ? emp.isGujarati === 'Yes' : emp.isGujarati === 'No');
                         const emailMatch = this.emailSentFilter === null || 
                             emp.email_invite_sent === this.emailSentFilter;
                         const participateMatch = this.participateFilter === null || 
                             emp.wants_to_participate === this.participateFilter;
                         
-                        return nameMatch && hinduMatch && emailMatch && participateMatch;
+                        return nameMatch && hinduMatch && gujaratiMatch && emailMatch && participateMatch;
                     });
                 }
             },
@@ -242,6 +249,7 @@
                     console.log('Clearing filters');
                     this.nameFilter = '';
                     this.hinduFilter = null;
+                    this.gujaratiFilter = null;
                     this.emailSentFilter = null;
                     this.participateFilter = null;
                 },
