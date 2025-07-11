@@ -55,6 +55,8 @@
                 v-model="selectedRows"
                 item-value="rowid"
                 show-select
+                :sort-by="sortBy"
+                @update:sort-by="sortBy = $event"
             >
                 <template v-slot:item.email_invite_sent="{ item }">
                     <v-chip :color="item.email_invite_sent ? 'green' : 'red'" small>
@@ -154,6 +156,7 @@
                     emailDialog: false,
                     editData: {},
                     emailData: { subject: '', message: '' },
+                    sortBy: [],
                     nameFilter: '',
                     hinduFilter: null,
                     gujaratiFilter: null,
@@ -164,14 +167,14 @@
                         { title: 'No', value: false }
                     ],
                     headers: [
-                        { title: 'Name', value: 'highlightedName' },
-                        { title: 'Email', value: 'email' },
-                        { title: 'Hindu', value: 'isHindu' },
-                        { title: 'Gujarati', value: 'isGujarati' },
-                        { title: 'Email Sent', value: 'email_invite_sent' },
-                        { title: 'Reply Received', value: 'reply_received' },
-                        { title: 'Wants to Participate', value: 'wants_to_participate' },
-                        { title: 'Phone', value: 'phone_number' },
+                        { title: 'Name', value: 'highlightedName', sortable: true },
+                        { title: 'Email', value: 'email', sortable: true },
+                        { title: 'Hindu', value: 'isHindu', sortable: true },
+                        { title: 'Gujarati', value: 'isGujarati', sortable: true },
+                        { title: 'Email Sent', value: 'email_invite_sent', sortable: true },
+                        { title: 'Reply Received', value: 'reply_received', sortable: true },
+                        { title: 'Wants to Participate', value: 'wants_to_participate', sortable: true },
+                        { title: 'Phone', value: 'phone_number', sortable: true },
                         { title: 'Actions', value: 'actions', sortable: false }
                     ]
                 }
