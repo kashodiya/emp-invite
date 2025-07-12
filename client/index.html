@@ -28,28 +28,31 @@
             </v-row>
             
             <v-row>
-                <v-col cols="2">
+                <v-col cols="4">
                     <v-text-field v-model="nameFilter" label="Filter by Name" clearable></v-text-field>
                 </v-col>
-                <v-col cols="1">
+                <v-col cols="2">
                     <v-text-field v-model="distIdFilter" label="Dist ID" clearable></v-text-field>
                 </v-col>
-                <v-col cols="1">
-                    <v-select v-model="hinduFilter" :items="boolOptions" label="Hindu" clearable></v-select>
+                <v-col cols="3">
+                    <v-switch v-model="hinduFilter" label="Hindu" color="primary" :true-value="true" :false-value="false" hide-details></v-switch>
                 </v-col>
-                <v-col cols="1">
-                    <v-select v-model="gujaratiFilter" :items="boolOptions" label="Gujarati" clearable></v-select>
+                <v-col cols="3">
+                    <v-switch v-model="gujaratiFilter" label="Gujarati" color="primary" :true-value="true" :false-value="false" hide-details></v-switch>
                 </v-col>
-                <v-col cols="1">
+            </v-row>
+            
+            <v-row>
+                <v-col cols="3">
                     <v-select v-model="emailSentFilter" :items="boolOptions" label="Email Sent" clearable></v-select>
                 </v-col>
-                <v-col cols="2">
-                    <v-select v-model="participateFilter" :items="boolOptions" label="Wants to Participate" clearable></v-select>
+                <v-col cols="3">
+                    <v-switch v-model="participateFilter" label="Participate?" color="primary" :true-value="true" :false-value="false" hide-details></v-switch>
                 </v-col>
-                <v-col cols="1">
+                <v-col cols="2">
                     <v-btn @click="clearFilters" color="secondary">Clear</v-btn>
                 </v-col>
-                <v-col cols="2">
+                <v-col cols="4">
                     <v-btn @click="openEmailDialog" color="primary" :disabled="selectedRows.length === 0">Send Email ({{selectedRows.length}})</v-btn>
                 </v-col>
             </v-row>
