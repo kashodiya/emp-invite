@@ -60,20 +60,21 @@
                 show-select
                 :sort-by="sortBy"
                 @update:sort-by="sortBy = $event"
+                density="compact"
             >
                 <template v-slot:item.email_invite_sent="{ item }">
-                    <v-chip :color="item.email_invite_sent ? 'green' : 'red'" small>
-                        {{ item.email_invite_sent ? 'Yes' : 'No' }}
+                    <v-chip :color="item.email_invite_sent ? 'green' : 'red'" size="x-small">
+                        {{ item.email_invite_sent ? 'Y' : 'N' }}
                     </v-chip>
                 </template>
                 <template v-slot:item.reply_received="{ item }">
-                    <v-chip :color="item.reply_received ? 'green' : 'red'" small>
-                        {{ item.reply_received ? 'Yes' : 'No' }}
+                    <v-chip :color="item.reply_received ? 'green' : 'red'" size="x-small">
+                        {{ item.reply_received ? 'Y' : 'N' }}
                     </v-chip>
                 </template>
                 <template v-slot:item.wants_to_participate="{ item }">
-                    <v-chip :color="item.wants_to_participate ? 'green' : 'red'" small>
-                        {{ item.wants_to_participate ? 'Yes' : 'No' }}
+                    <v-chip :color="item.wants_to_participate ? 'green' : 'red'" size="x-small">
+                        {{ item.wants_to_participate ? 'Y' : 'N' }}
                     </v-chip>
                 </template>
                 <template v-slot:item.actions="{ item }">
