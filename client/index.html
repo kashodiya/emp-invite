@@ -115,9 +115,11 @@
                             <v-row>
                                 <v-col cols="6">
                                     <v-switch v-model="editData.email_invite_sent" label="Email Sent" color="primary"></v-switch>
+                                    <p v-if="selectedEmployee.email_sent_at" class="text-caption mt-1"><strong>Sent at:</strong> {{ selectedEmployee.email_sent_at }}</p>
                                 </v-col>
                                 <v-col cols="6">
                                     <v-switch v-model="editData.reply_received" label="Reply Received" color="primary"></v-switch>
+                                    <p v-if="selectedEmployee.email_replied_at" class="text-caption mt-1"><strong>Replied at:</strong> {{ selectedEmployee.email_replied_at }}</p>
                                 </v-col>
                             </v-row>
                             <v-row>
