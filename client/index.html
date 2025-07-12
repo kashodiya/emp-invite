@@ -287,13 +287,16 @@
                     this.emailDialog = true;
                 },
                 async sendEmails() {
-                    const employeeIds = this.selectedRows.map(emp => emp.rowid);
+                    const selectedEmployees = this.filteredEmployees.filter(emp => 
+                        this.selectedRows.includes(emp.rowid)
+                    );
+                    const emails = selectedEmployees.map(emp => emp.email);
                     try {
                         const response = await fetch('/api/send-emails', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                employee_ids: employeeIds,
+                                emails: emails,
                                 subject: this.emailData.subject,
                                 message: this.emailData.message
                             })

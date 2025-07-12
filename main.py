@@ -13,6 +13,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Read environment variables
+SMTP_SERVER = os.getenv('SMTP_SERVER')
+SMTP_PORT = int(os.getenv('SMTP_PORT', 587))
+SENDER_EMAIL = os.getenv('SENDER_EMAIL')
+
 app = FastAPI()
 
 # Mount static files
@@ -26,7 +31,7 @@ class EmployeeUpdate(BaseModel):
     comments: Optional[str] = None
 
 class BulkEmailRequest(BaseModel):
-    employee_ids: List[int]
+    emails: List[str]
     subject: str
     message: str 
  
@@ -109,21 +114,29 @@ async def get_employee(employee_id: int):
 @app.post("/api/send-emails")
 async def send_bulk_emails(request: BulkEmailRequest):
     async with aiosqlite.connect("employee_database.db") as db:
-        placeholders = ','.join('?' * len(request.employee_ids))
-        cursor = await db.execute(f"SELECT rowid, email, firstName, lastName FROM employees WHERE rowid IN ({placeholders})", request.employee_ids)
+        placeholders = ','.join('?' * len(request.emails))
+        cursor = await db.execute(f"SELECT email, firstName, lastName FROM employees WHERE email IN ({placeholders})", request.emails)
         employees = await cursor.fetchall()
         
         sent_count = 0
-        for emp_id, email, first_name, last_name in employees:
+        for email, first_name, last_name in employees:
             try:
-                # Simulate email sending (replace with actual SMTP)
-                print(f"Sending email to {first_name} {last_name} ({email})")
-                print(f"Subject: {request.subject}")
-                print(f"Message: {request.message}")
+                # Send actual email via SMTP
+                msg = MIMEMultipart()
+                msg['From'] = SENDER_EMAIL
+                msg['To'] = SENDER_EMAIL
+                # msg['To'] = email
+                msg['Subject'] = request.subject
+                msg.attach(MIMEText(request.message, 'plain'))
+                
+                with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+                    server.send_message(msg)
+                
+                print(f"Email sent to {first_name} {last_name} ({email})")
                 
                 # Update email_invite_sent status
-                await db.execute("UPDATE employees SET email_invite_sent = 1, email_sent_at = ? WHERE rowid = ?", 
-                                (datetime.now().isoformat(), emp_id))
+                await db.execute("UPDATE employees SET email_invite_sent = 1, email_sent_at = ? WHERE email = ?", 
+                                (datetime.now().isoformat(), email))
                 sent_count += 1
             except Exception as e:
                 print(f"Failed to send email to {email}: {e}")
