@@ -117,6 +117,8 @@ async def send_bulk_emails(request: BulkEmailRequest):
         placeholders = ','.join('?' * len(request.emails))
         cursor = await db.execute(f"SELECT email, firstName, lastName FROM employees WHERE email IN ({placeholders})", request.emails)
         employees = await cursor.fetchall()
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
         
         sent_count = 0
         for email, first_name, last_name in employees:
@@ -129,8 +131,9 @@ async def send_bulk_emails(request: BulkEmailRequest):
                 msg['Subject'] = request.subject
                 msg.attach(MIMEText(request.message, 'plain'))
                 
-                with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-                    server.send_message(msg)
+
+                # send_email(server, sender, receiver, subject, body)
+                server.send_message(msg)
                 
                 print(f"Email sent to {first_name} {last_name} ({email})")
                 
@@ -140,7 +143,8 @@ async def send_bulk_emails(request: BulkEmailRequest):
                 sent_count += 1
             except Exception as e:
                 print(f"Failed to send email to {email}: {e}")
-        
+
+        server.quit()
         await db.commit()
         return {"message": f"Emails sent to {sent_count} employees"}
 
