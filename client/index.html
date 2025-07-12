@@ -49,7 +49,15 @@
                 </v-col>
             </v-row>
 
+            <v-row v-if="loading">
+                <v-col cols="12" class="text-center">
+                    <v-progress-circular indeterminate color="primary"></v-progress-circular>
+                    <p>Loading employees...</p>
+                </v-col>
+            </v-row>
+
             <v-data-table
+                v-else
                 :headers="headers"
                 :items="filteredEmployees"
                 class="elevation-1"
@@ -154,6 +162,7 @@
             data() {
                 return {
                     employees: [],
+                    loading: false,
                     selectedEmployee: null,
                     selectedRows: [],
                     dialog: false,
@@ -209,12 +218,15 @@
             methods: {
                 async fetchEmployees() {
                     console.log('Fetching employees from API...');
+                    this.loading = true;
                     try {
                         const response = await fetch('/api/employees');
                         this.employees = await response.json();
                         console.log('Employees loaded:', this.employees.length);
                     } catch (error) {
                         console.error('Error fetching employees:', error);
+                    } finally {
+                        this.loading = false;
                     }
                 },
                 selectEmployee(event, { item }) {
