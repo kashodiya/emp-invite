@@ -143,12 +143,12 @@
                 </v-card>
             </v-dialog>
 
-            <v-dialog v-model="emailDialog" max-width="600px">
+            <v-dialog v-model="emailDialog" max-width="500px">
                 <v-card>
-                    <v-card-title>Send Email to {{ selectedRows.length }} Employee(s)</v-card-title>
+                    <v-card-title>Confirm Bulk Email</v-card-title>
                     <v-card-text>
-                        <v-text-field v-model="emailData.subject" label="Subject" required></v-text-field>
-                        <v-textarea v-model="emailData.message" label="Message" rows="5" required></v-textarea>
+                        <p>Are you sure you want to send bulk emails to {{ selectedRows.length }} employee(s)?</p>
+                        <p><small>The email content and subject are predefined in the system.</small></p>
                     </v-card-text>
                     <v-card-actions>
                         <v-spacer></v-spacer>
@@ -178,7 +178,7 @@
                     dialog: false,
                     emailDialog: false,
                     editData: {},
-                    emailData: { subject: '', message: '' },
+
                     sortBy: [],
                     nameFilter: '',
                     distIdFilter: '',
@@ -295,11 +295,7 @@
                         const response = await fetch('/api/send-emails', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                emails: emails,
-                                subject: this.emailData.subject,
-                                message: this.emailData.message
-                            })
+                            body: JSON.stringify({ emails: emails })
                         });
                         
                         if (response.ok) {
@@ -308,7 +304,6 @@
                             await this.fetchEmployees();
                             this.emailDialog = false;
                             this.selectedRows = [];
-                            this.emailData = { subject: '', message: '' };
                         }
                     } catch (error) {
                         console.error('Error sending emails:', error);

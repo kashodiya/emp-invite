@@ -10,6 +10,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
 from dotenv import load_dotenv
+from jinja2 import Environment, BaseLoader
 
 load_dotenv()
 
@@ -17,6 +18,9 @@ load_dotenv()
 SMTP_SERVER = os.getenv('SMTP_SERVER')
 SMTP_PORT = int(os.getenv('SMTP_PORT', 587))
 SENDER_EMAIL = os.getenv('SENDER_EMAIL')
+
+with open("email-template.txt", "r") as f:
+    email_template = f.read().strip()
 
 app = FastAPI()
 
@@ -31,9 +35,7 @@ class EmployeeUpdate(BaseModel):
     comments: Optional[str] = None
 
 class BulkEmailRequest(BaseModel):
-    emails: List[str]
-    subject: str
-    message: str 
+    emails: List[str] 
  
 @app.get("/")
 async def read_root():
@@ -111,31 +113,44 @@ async def get_employee(employee_id: int):
             return dict(zip(columns, row))
         raise HTTPException(status_code=404, detail="Employee not found")
 
+
+# Defining the prepare_email() method
+def prepare_email(full_name, email):
+    print(f"Sending email to {full_name} ({email})")
+    
+    env = Environment(loader=BaseLoader)
+    template = env.from_string(email_template)
+    email_body = template.render({"name": full_name})
+
+    # print(email_body)
+
+    return email_body
+
 @app.post("/api/send-emails")
 async def send_bulk_emails(request: BulkEmailRequest):
     async with aiosqlite.connect("employee_database.db") as db:
         placeholders = ','.join('?' * len(request.emails))
-        cursor = await db.execute(f"SELECT email, firstName, lastName FROM employees WHERE email IN ({placeholders})", request.emails)
+        cursor = await db.execute(f"SELECT email, highlightedName FROM employees WHERE email IN ({placeholders})", request.emails)
         employees = await cursor.fetchall()
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
         
         sent_count = 0
-        for email, first_name, last_name in employees:
+        for email, highlighted_name in employees:
             try:
                 # Send actual email via SMTP
                 msg = MIMEMultipart()
                 msg['From'] = SENDER_EMAIL
-                msg['To'] = SENDER_EMAIL
-                # msg['To'] = email
-                msg['Subject'] = request.subject
-                msg.attach(MIMEText(request.message, 'plain'))
-                
+                # msg['To'] = SENDER_EMAIL
+                msg['To'] = email
+                msg['Subject'] = "Personal Invitation - Community Opportunity (Optional)"
+                body = prepare_email(highlighted_name, email)
+                msg.attach(MIMEText(body, 'plain'))
 
                 # send_email(server, sender, receiver, subject, body)
                 server.send_message(msg)
                 
-                print(f"Email sent to {first_name} {last_name} ({email})")
+                print(f"Email sent to {highlighted_name} ({email})")
                 
                 # Update email_invite_sent status
                 await db.execute("UPDATE employees SET email_invite_sent = 1, email_sent_at = ? WHERE email = ?", 
