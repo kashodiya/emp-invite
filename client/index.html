@@ -28,34 +28,33 @@
             </v-row>
             
             <v-row>
-                <v-col cols="4">
+                <v-col cols="3">
                     <v-text-field v-model="nameFilter" label="Filter by Name" clearable></v-text-field>
                 </v-col>
-                <v-col cols="2">
+                <v-col cols="1">
                     <v-text-field v-model="distIdFilter" label="Dist ID" clearable></v-text-field>
                 </v-col>
-                <v-col cols="3">
-                    <v-switch v-model="hinduFilter" label="Hindu" color="primary" :true-value="true" :false-value="false" hide-details></v-switch>
-                </v-col>
-                <v-col cols="3">
-                    <v-switch v-model="gujaratiFilter" label="Gujarati" color="primary" :true-value="true" :false-value="false" hide-details></v-switch>
-                </v-col>
-            </v-row>
-            
-            <v-row>
-                <v-col cols="3">
-                    <v-select v-model="emailSentFilter" :items="boolOptions" label="Email Sent" clearable></v-select>
-                </v-col>
-                <v-col cols="3">
-                    <v-switch v-model="participateFilter" label="Participate?" color="primary" :true-value="true" :false-value="false" hide-details></v-switch>
-                </v-col>
-                <v-col cols="2">
-                    <v-btn @click="clearFilters" color="secondary">Clear</v-btn>
-                </v-col>
                 <v-col cols="4">
+                    <v-row>
+                        <v-col>
+                            <v-switch v-model="gujaratiFilter" label="Gujarati" color="primary" :true-value="true" :false-value="false" hide-details></v-switch>
+                        </v-col>
+                        <v-col>
+                            <v-switch v-model="emailSentFilter" label="Email Sent" color="primary" :true-value="true" :false-value="false" hide-details></v-switch>
+                        </v-col>
+                        <v-col>
+                            <v-switch v-model="participateFilter" label="Participate?" color="primary" :true-value="true" :false-value="false" hide-details></v-switch>
+                        </v-col>
+                    </v-row>
+                </v-col>
+                <v-col class="align-self-center pb-10">
+                    <v-btn @click="clearFilters" color="secondary" size="small">Clear</v-btn>
+                </v-col>
+                <v-col class="align-self-center pb-10">
                     <v-btn @click="openEmailDialog" color="primary" :disabled="selectedRows.length === 0">Send Email ({{selectedRows.length}})</v-btn>
                 </v-col>
             </v-row>
+            
 
             <v-row v-if="loading">
                 <v-col cols="12" class="text-center">
@@ -180,19 +179,16 @@
                     sortBy: [],
                     nameFilter: '',
                     distIdFilter: '',
-                    hinduFilter: null,
+
                     gujaratiFilter: null,
                     emailSentFilter: null,
                     participateFilter: null,
-                    boolOptions: [
-                        { title: 'Yes', value: true },
-                        { title: 'No', value: false }
-                    ],
+
                     headers: [
                         { title: 'Name', value: 'highlightedName', sortable: true },
                         { title: 'Email', value: 'email', sortable: true },
                         { title: 'Dist ID', value: 'dist_id', sortable: true },
-                        { title: 'Hindu', value: 'isHindu', sortable: true },
+
                         { title: 'Gujarati', value: 'isGujarati', sortable: true },
                         { title: 'Email Sent', value: 'email_invite_sent', sortable: true },
                         { title: 'Replied?', value: 'reply_received', sortable: true },
@@ -210,16 +206,15 @@
                             emp.highlightedName?.toLowerCase().includes(this.nameFilter.toLowerCase());
                         const distIdMatch = !this.distIdFilter || 
                             emp.dist_id?.toString() === this.distIdFilter;
-                        const hinduMatch = this.hinduFilter === null || 
-                            (this.hinduFilter ? emp.isHindu === 'Yes' : emp.isHindu === 'No');
+
                         const gujaratiMatch = this.gujaratiFilter === null || 
                             (this.gujaratiFilter ? emp.isGujarati === 'Yes' : emp.isGujarati === 'No');
                         const emailMatch = this.emailSentFilter === null || 
-                            emp.email_invite_sent === this.emailSentFilter;
+                            (this.emailSentFilter ? (emp.email_invite_sent === true || emp.email_invite_sent === 1) : (emp.email_invite_sent === false || emp.email_invite_sent === 0 || emp.email_invite_sent === null));
                         const participateMatch = this.participateFilter === null || 
-                            emp.wants_to_participate === this.participateFilter;
+                            (this.participateFilter ? (emp.wants_to_participate === true || emp.wants_to_participate === 1) : (emp.wants_to_participate === false || emp.wants_to_participate === 0 || emp.wants_to_participate === null));
                         
-                        return nameMatch && distIdMatch && hinduMatch && gujaratiMatch && emailMatch && participateMatch;
+                        return nameMatch && distIdMatch && gujaratiMatch && emailMatch && participateMatch;
                     });
                 }
             },
@@ -280,7 +275,7 @@
                     console.log('Clearing filters');
                     this.nameFilter = '';
                     this.distIdFilter = '';
-                    this.hinduFilter = null;
+
                     this.gujaratiFilter = null;
                     this.emailSentFilter = null;
                     this.participateFilter = null;
